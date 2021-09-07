@@ -248,3 +248,93 @@ class GayBerne(AnisotropicPair):
             A list of dictionaries, one for each particle type in the system.
         """
         return super()._return_type_shapes()
+
+class MorseAniso(AnisotropicPair):
+    r"""Gay-Berne anisotropic pair potential.
+
+    Warning: The code has yet to be updated to the current API.
+
+    Args:
+        nlist (`hoomd.md.nlist.NList`): Neighbor list
+        default_r_cut (float): Default cutoff radius :math:`[\mathrm{length}]`.
+        mode (str): energy shifting/smoothing mode.
+
+    `MorseAniso` computes the Gay-Berne potential between anisotropic
+    particles.
+
+    Args:
+        nlist (`hoomd.md.nlist.NList`): Neighbor list.
+        default_r_cut (float): Default cutoff radius :math:`[\mathrm{length}]`.
+        default_r_on (float): Default turn-on radius :math:`[\mathrm{length}]`.
+        mode (str): Energy shifting/smoothing mode.
+
+    `MorseAniso` specifies that a MorseAniso pair potential should be applied between
+    every non-excluded particle pair in the simulation.
+
+    .. math::
+        :nowrap:
+
+        \begin{eqnarray*}
+        V_{\mathrm{morse}}(r) = & D_0 \left[ \exp \left(-2\alpha\left(
+            r-r_0\right)\right) -2\exp \left(-\alpha\left(r-r_0\right)
+            \right) \right]; & r < r_{\mathrm{cut}} \\
+            = & 0; & r \ge r_{\mathrm{cut}} \\ 
+        \orien_fact = (1+exp(cos(\theta - \alpha))) *(1+exp(cos(\theta - \alpha)))
+        \end{eqnarray*}
+
+    See `Pair` for details on how forces are calculated and the available
+    energy shifting and smoothing modes.
+
+    .. py:attribute:: params
+
+        The potential parameters. The dictionary has the following keys:
+
+        * ``D0`` (`float`, **required**) - depth of the potential at its
+          minimum :math:`D_0` :math:`[\mathrm{energy}]`
+        * ``alpha`` (`float`, **required**) - the width of the potential well
+          :math:`\alpha` :math:`[\mathrm{length}^{-1}]`
+        * ``r0`` (`float`, **required**) - position of the minimum
+          :math:`r_0` :math:`[\mathrm{length}]`
+
+        
+        * ``w`` 
+        * ``kai`` describe orientation
+
+        Type: `TypeParameter` [`tuple` [``particle_type``, ``particle_type``],
+        `dict`]
+
+    Example::
+
+        nl = nlist.Cell()
+        morse = pair.MorseAniso(default_r_cut=3.0, nlist=nl)
+        morse.params[('A', 'A')] = dict(D0=1.0, alpha=3.0, r0=1.0,w=20, kai=1.0)
+        morse.r_cut[('A', 'B')] = 3.0
+
+    """
+    _cpp_class_name = "AnisoPotentialPairMorseAniso"
+
+    def __init__(self, nlist, default_r_cut=None, mode='none'):
+        super().__init__(nlist, default_r_cut, mode)
+        params = TypeParameter(
+            'params', 'particle_types',
+            TypeParameterDict(D0=float,
+                              alpha=float,
+                              r0=float,
+                              w=float,
+                              kai=float,
+                              len_keys=2))
+        self._add_typeparam(params)
+
+    # @log(category="object")
+    # def type_shapes(self):
+    #     """Get all the types of shapes in the current simulation.
+
+    #     Example:
+
+    #         >>> gay_berne.type_shapes
+    #         [{'type': 'Ellipsoid', 'a': 1.0, 'b': 1.0, 'c': 1.5}]
+
+    #     Returns:
+    #         A list of dictionaries, one for each particle type in the system.
+    #     """
+    #     return super()._return_type_shapes()

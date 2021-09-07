@@ -82,7 +82,7 @@ struct pair_args_t
     const unsigned int* d_head_list; //!< Head list indexes for accessing d_nlist
     const Scalar* d_rcutsq;          //!< Device array listing r_cut squared per particle type pair
     const Scalar* d_ronsq;           //!< Device array listing r_on squared per particle type pair
-    const size_t size_neigh_list;    //!< Size of the neighbor list for texture binding
+    const size_t size_neigh_list;    //!< Size  of the neighbor list for texture binding
     const unsigned int ntypes;       //!< Number of particle types in the simulation
     const unsigned int block_size;   //!< Block size to execute
     const unsigned int shift_mode;   //!< The potential energy shift mode

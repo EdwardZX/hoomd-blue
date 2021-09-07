@@ -24,3 +24,12 @@ gpu_compute_pair_aniso_forces_dipole(const a_pair_args_t& pair_args,
     {
     return gpu_compute_pair_aniso_forces<EvaluatorPairDipole>(pair_args, d_param, d_shape_param);
     }
+
+hipError_t
+gpu_compute_pair_aniso_forces_morse_aniso(const a_pair_args_t& pair_args,
+                                     const EvaluatorPairMorseAniso::param_type* d_param,
+                                     const EvaluatorPairMorseAniso::shape_type* d_shape_param)
+    {
+    return gpu_compute_pair_aniso_forces<EvaluatorPairMorseAniso>(pair_args, d_param, d_shape_param);
+    }
+
