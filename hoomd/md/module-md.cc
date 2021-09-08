@@ -275,7 +275,7 @@ PYBIND11_MODULE(_md, m)
     export_PotentialPair<PotentialPairTWF>(m, "PotentialPairTWF");
     export_AnisoPotentialPair<AnisoPotentialPairGB>(m, "AnisoPotentialPairGB");
     export_AnisoPotentialPair<AnisoPotentialPairDipole>(m, "AnisoPotentialPairDipole");
- export_AnisoPotentialPair<AnisoPotentialPairMorseAniso>(m, "AnisoPotentialPairMorseAniso")   
+ export_AnisoPotentialPair<AnisoPotentialPairMorseAniso>(m, "AnisoPotentialPairMorseAniso");  
     export_PotentialPair<PotentialPairForceShiftedLJ>(m, "PotentialPairForceShiftedLJ");
     export_PotentialPairDPDThermo<PotentialPairDPDThermoDPD, PotentialPairDPD>(
         m,

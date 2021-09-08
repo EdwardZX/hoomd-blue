@@ -27,7 +27,7 @@ typedef AnisoPotentialPair<EvaluatorPairGB> AnisoPotentialPairGB;
 //! Pair potential force compute for dipole forces and torques
 typedef AnisoPotentialPair<EvaluatorPairDipole> AnisoPotentialPairDipole;
 
-typedef AnisoPetentialPair<EvaluatorPairMorseAniso> AnisoPotentialPairMorseAniso;
+typedef AnisoPotentialPair<EvaluatorPairMorseAniso> AnisoPotentialPairMorseAniso;
 
 #ifdef ENABLE_HIP
 //! Pair potential force compute for Gay-Berne forces and torques on the GPU

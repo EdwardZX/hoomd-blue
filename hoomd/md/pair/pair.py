@@ -1918,3 +1918,4 @@ class TWF(Pair):
                               alpha=float,
                               len_keys=2))
         self._add_typeparam(params)
+

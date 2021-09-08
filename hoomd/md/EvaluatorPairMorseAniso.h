@@ -5,8 +5,8 @@
 // $URL$
 // Maintainer: ndtrung
 
-#ifndef __PAIR_EVALUATOR_DIPOLE_H__
-#define __PAIR_EVALUATOR_DIPOLE_H__
+#ifndef __PAIR_EVALUATOR_MORSE_ANISO_H__
+#define __PAIR_EVALUATOR_MORSE_ANISO_H__
 
 #ifndef __HIPCC__
 #include <string>
@@ -101,7 +101,7 @@ class EvaluatorPairMorseAniso
         */
         HOSTDEVICE void load_shared(char*& ptr, unsigned int& available_bytes) const { }
 
-        HOSTDEVICE shape_type() : { }
+        HOSTDEVICE shape_type() { }
 
 #ifndef __HIPCC__
        
@@ -123,18 +123,18 @@ class EvaluatorPairMorseAniso
     //! Constructs the pair potential evaluator
     /*! \param _dr Displacement vector between particle centers of mass
         \param _rcutsq Squared distance at which the potential goes to 0
-        \param _qi Quaternion of i^{th} particle
-        \param _qj Quaternion of j^{th} particle
-        \param _A Electrostatic energy scale
-        \param _kappa Inverse screening length
+        \param _quat_i Quaternion of i^{th} particle
+        \param _quat_j Quaternion of j^{th} particle
+        \param _D0 Electrostatic energy scale
+        \param _alpha ..._w,r0 Inverse screening length
         \param _params Per type pair parameters of this potential
     */
-    HOSTDEVICE EvaluatorPairDipole(Scalar3& _dr,
+    HOSTDEVICE EvaluatorPairMorseAniso(Scalar3& _dr,
                                    Scalar4& _quat_i,
                                    Scalar4& _quat_j,
                                    Scalar _rcutsq,
                                    const param_type& _params)
-        : dr(_dr), rcutsq(_rcutsq), qi(_qi), qj(_qj), 
+        : dr(_dr), rcutsq(_rcutsq), quat_i(_quat_i), quat_j(_quat_j), 
          D0(_params.D0), alpha(_params.alpha), r0(_params.r0), w(_params.w), kai(_params.kai)
         {
         }
@@ -221,15 +221,28 @@ class EvaluatorPairMorseAniso
 
          
         Scalar r = fast::sqrt(rsq);
-        vec3<Scalar> n_rvec(rvec / r);
 
--
+        vec3<Scalar> unitr(fast::rsqrt(dot(dr, dr)) * dr);
+        // obtain rotation matrices (space->body)
+        // obtain the u_vec;
+        //quat<Scalar> a3 = (q_i + conj(q_i));
+        //Scalar a3 = fast::sqrt(1-q_i.s); 
+        //rotmat3<Scalar> rotA(conj(q_i));
+        //rotmat3<Scalar> rotB(conj(q_j));
+
+        // last row of rotation matrix
+        vec3<Scalar> q0(make_scalar3(1,0,0));
+        vec3<Scalar> q_i = rotate(quat_i,q0);
+        vec3<Scalar> q_j = rotate(quat_j,q0); //proj to body;
+        //Scalar Exp_factor, orien_factor;
+
         Scalar Exp_factor = fast::exp(-alpha * (r - r0));
-        Scalar orien_factor =  (Scalar(1.0) + fast::exp(-w * (dot(n_rvec,q_i) - kai))) *
-        (Scalar(1.0) + fast::exp(-w * ((dot(-n_rvec,q_j)-kai)));
 
-        e = D0 * Exp_factor * (Exp_factor - Scalar(2.0));
-        f = Scalar(2.0) * D0 * alpha * Exp_factor * (Exp_factor - Scalar(1.0)) / r;
+        Scalar orien_factor =  (Scalar(1.0) + fast::exp(-w * (dot(unitr,q_i) - kai))) *
+        (Scalar(1.0) + fast::exp(-w * ((dot(-unitr,q_j)-kai))));
+
+        Scalar e = D0 * Exp_factor * (Exp_factor - Scalar(2.0));
+        Scalar f = Scalar(2.0) * D0 * alpha * Exp_factor * (Exp_factor - Scalar(1.0)) / r;
 
         if (energy_shift)
             {
@@ -241,7 +254,7 @@ class EvaluatorPairMorseAniso
 
 
         
-        force = vec_to_scalar3(f / orien_factor);
+        force = vec_to_scalar3( f*unitr/ orien_factor);
         // without torque 
         torque_i = make_scalar3(0, 0, 0);
         torque_j = make_scalar3(0, 0, 0);
@@ -268,7 +281,8 @@ class EvaluatorPairMorseAniso
     protected:
     Scalar3 dr;             //!< Stored vector pointing between particle centers of mass
     Scalar rcutsq;          //!< Stored rcutsq from the constructor
-    Scalar4 q_i, q_j;        //!< Stored particle charges
+    quat<Scalar> quat_i; //!< Orientation quaternion for particle i
+    quat<Scalar> quat_j;        //!< Stored particle charges
     //Scalar4 quat_i, quat_j; //!< Stored quaternion of ith and jth particle from constructor
     // vec3<Scalar> mu_i;      /// Magnetic moment for ith particle
     // vec3<Scalar> mu_j;      /// Magnetic moment for jth particle
